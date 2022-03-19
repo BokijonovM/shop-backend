@@ -5,6 +5,7 @@ import passport from "passport";
 import { adminOnlyMiddleware } from "../../auth/admin.js";
 import { JWTAuthMiddleware } from "../../auth/token.js";
 import { authenticateUser } from "../../auth/tools.js";
+import ShopsModel from "../shops/shopsSchema.js";
 
 const usersRouter = express.Router();
 
@@ -36,6 +37,16 @@ usersRouter.delete("/me", JWTAuthMiddleware, async (req, res, next) => {
   try {
     await UsersModel.findByIdAndDelete(req.user._id);
     res.send();
+  } catch (error) {
+    next(error);
+  }
+});
+
+usersRouter.get("/me/shops", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    const shops = await ShopsModel.find({ user: req.user._id.toString() });
+
+    res.status(200).send(shops);
   } catch (error) {
     next(error);
   }
@@ -165,15 +176,5 @@ usersRouter.delete("/:userId", adminOnlyMiddleware, async (req, res, next) => {
     );
   }
 });
-
-// usersRouter.get("/me/stories", JWTAuthMiddleware, async (req, res, next) => {
-//   try {
-//     const posts = await BlogsModel.find({ user: req.user._id.toString() });
-
-//     res.status(200).send(posts);
-//   } catch (error) {
-//     next(error);
-//   }
-// });
 
 export default usersRouter;

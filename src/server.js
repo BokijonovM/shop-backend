@@ -11,6 +11,7 @@ import passport from "passport";
 import usersRouter from "./services/users/user.js";
 import googleStrategy from "./auth/oauth.js";
 import shopsRouter from "./services/shops/shops.js";
+import Pipeline from "pipeline";
 
 const server = express();
 const port = process.env.PORT || 3001;

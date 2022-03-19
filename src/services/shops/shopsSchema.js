@@ -9,10 +9,10 @@ const shopSchema = new Schema(
     phoneNumber: { type: String, required: true },
     category: { type: String, required: true },
     cover: { type: String },
-    instagram: { type: String, unique: true },
-    twitter: { type: String, unique: true },
-    facebook: { type: String, unique: true },
-    telegram: { type: String, unique: true },
+    instagram: { type: String },
+    twitter: { type: String },
+    facebook: { type: String },
+    telegram: { type: String },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -31,8 +31,8 @@ shopSchema.static("findShopWithUser", async function (mongoQuery) {
     .skip(mongoQuery.options.skip)
     .sort(mongoQuery.options.sort)
     .populate({
-      path: "users",
-      select: "firstName lastName",
+      path: "user",
+      select: "firstName lastName email role",
     });
   return { total, posts };
 });
