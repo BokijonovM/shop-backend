@@ -6,6 +6,18 @@ import { adminOnlyMiddleware } from "../../auth/admin.js";
 import { JWTAuthMiddleware } from "../../auth/token.js";
 import { authenticateUser } from "../../auth/tools.js";
 import ShopsModel from "../shops/shopsSchema.js";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import multer from "multer";
+
+const cloudinaryUpload = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "capstone users",
+    },
+  }),
+}).single("image");
 
 const usersRouter = express.Router();
 
@@ -51,6 +63,31 @@ usersRouter.get("/me/shops", JWTAuthMiddleware, async (req, res, next) => {
     next(error);
   }
 });
+
+usersRouter.post(
+  "/me/image",
+  JWTAuthMiddleware,
+  cloudinaryUpload,
+  async (req, res, next) => {
+    try {
+      const userId = req.user._id;
+      const updated = await UsersModel.findByIdAndUpdate(
+        userId,
+        { image: req.file.path },
+        {
+          new: true,
+        }
+      );
+      if (updated) {
+        res.send(updated);
+      } else {
+        next(createHttpError(404, `User with id ${userId} not found!`));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 usersRouter.post("/login", async (req, res, next) => {
   try {

@@ -3,6 +3,18 @@ import createHttpError from "http-errors";
 import ShopsModel from "./shopsSchema.js";
 import q2m from "query-to-mongo";
 import { JWTAuthMiddleware } from "../../auth/token.js";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import multer from "multer";
+
+const cloudinaryUpload = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "capstone shops",
+    },
+  }),
+}).single("image");
 
 const shopsRouter = express.Router();
 
@@ -36,6 +48,31 @@ shopsRouter.post("/", JWTAuthMiddleware, async (req, res, next) => {
     next(error);
   }
 });
+
+shopsRouter.post(
+  "/:shopId/image",
+  JWTAuthMiddleware,
+  cloudinaryUpload,
+  async (req, res, next) => {
+    try {
+      const userId = req.params.shopId;
+      const updated = await ShopsModel.findByIdAndUpdate(
+        userId,
+        { cover: req.file.path },
+        {
+          new: true,
+        }
+      );
+      if (updated) {
+        res.send(updated);
+      } else {
+        next(createHttpError(404, `User with id ${userId} not found!`));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 shopsRouter.get("/:shopId", JWTAuthMiddleware, async (req, res, next) => {
   try {
