@@ -11,7 +11,7 @@ import passport from "passport";
 import usersRouter from "./services/users/user.js";
 import googleStrategy from "./auth/oauth.js";
 import shopsRouter from "./services/shops/shops.js";
-import Pipeline from "pipeline";
+import productsRouter from "./services/products/product.js";
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -24,6 +24,7 @@ server.use(passport.initialize());
 
 server.use("/users", usersRouter);
 server.use("/shops", shopsRouter);
+server.use("/products", productsRouter);
 
 server.use(unauthorizedHandler);
 server.use(forbiddenHandler);
