@@ -4,8 +4,70 @@ import UsersModel from "./userSchema.js";
 import passport from "passport";
 import { adminOnlyMiddleware } from "../../auth/admin.js";
 import { JWTAuthMiddleware } from "../../auth/token.js";
+import { authenticateUser } from "../../auth/tools.js";
 
 const usersRouter = express.Router();
+
+usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    const reqUser = await UsersModel.findById(req.user._id);
+    if (reqUser) {
+      res.status(201).send(reqUser);
+    } else {
+      next(createError(404, "user not found"));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+usersRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    const user = await UsersModel.findByIdAndUpdate(req.user._id, req.body, {
+      new: true,
+    });
+    res.send(user);
+  } catch (error) {
+    next(error);
+  }
+});
+
+usersRouter.delete("/me", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    await UsersModel.findByIdAndDelete(req.user._id);
+    res.send();
+  } catch (error) {
+    next(error);
+  }
+});
+
+usersRouter.post("/login", async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await UsersModel.checkCredentials(email, password);
+
+    if (user) {
+      const accessToken = await authenticateUser(user);
+      res.send({ accessToken });
+    } else {
+      next(createError(401, "Credentials are not ok!"));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+usersRouter.post("/register", async (req, res, next) => {
+  try {
+    const newUser = new UsersModel(req.body);
+    const DbRes = await newUser.save({ new: true });
+
+    res.status(200).send(DbRes);
+  } catch (error) {
+    next(error);
+  }
+});
 
 usersRouter.post("/", async (req, res, next) => {
   try {
@@ -67,7 +129,7 @@ usersRouter.get(
   }
 );
 
-usersRouter.get("/:userId", async (req, res, next) => {
+usersRouter.get("/:userId", adminOnlyMiddleware, async (req, res, next) => {
   try {
     const idOfUser = req.params.userId;
 
@@ -86,27 +148,7 @@ usersRouter.get("/:userId", async (req, res, next) => {
   }
 });
 
-usersRouter.put("/:userId", async (req, res, next) => {
-  try {
-    const userID = req.params.userId;
-    const updatedUser = await UsersModel.findByIdAndUpdate(userID, req.body, {
-      new: true,
-    });
-    if (updatedUser) {
-      res.send(updatedUser);
-    } else {
-      next(createHttpError(404, `User with id ${userID} not found!`));
-    }
-  } catch (error) {
-    next(
-      createHttpError(400, "Some errors occurred in usersRouter body!", {
-        message: error.message,
-      })
-    );
-  }
-});
-
-usersRouter.delete("/:userId", async (req, res, next) => {
+usersRouter.delete("/:userId", adminOnlyMiddleware, async (req, res, next) => {
   try {
     const userID = req.params.userId;
     const deletedUser = await UsersModel.findByIdAndDelete(userID);
@@ -123,5 +165,15 @@ usersRouter.delete("/:userId", async (req, res, next) => {
     );
   }
 });
+
+// usersRouter.get("/me/stories", JWTAuthMiddleware, async (req, res, next) => {
+//   try {
+//     const posts = await BlogsModel.find({ user: req.user._id.toString() });
+
+//     res.status(200).send(posts);
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 export default usersRouter;

@@ -10,6 +10,7 @@ import {
 import passport from "passport";
 import usersRouter from "./services/users/user.js";
 import googleStrategy from "./auth/oauth.js";
+import shopsRouter from "./services/shops/shops.js";
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -21,6 +22,7 @@ server.use(express.json());
 server.use(passport.initialize());
 
 server.use("/users", usersRouter);
+server.use("/shops", shopsRouter);
 
 server.use(unauthorizedHandler);
 server.use(forbiddenHandler);
