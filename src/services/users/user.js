@@ -9,6 +9,7 @@ import ShopsModel from "../shops/shopsSchema.js";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
+import ProductsModel from "../products/schema.js";
 
 const cloudinaryUpload = multer({
   storage: new CloudinaryStorage({
@@ -57,6 +58,15 @@ usersRouter.delete("/me", JWTAuthMiddleware, async (req, res, next) => {
 usersRouter.get("/me/shops", JWTAuthMiddleware, async (req, res, next) => {
   try {
     const shops = await ShopsModel.find({ user: req.user._id.toString() });
+
+    res.status(200).send(shops);
+  } catch (error) {
+    next(error);
+  }
+});
+usersRouter.get("/me/products", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    const shops = await ProductsModel.find({ user: req.user._id.toString() });
 
     res.status(200).send(shops);
   } catch (error) {
