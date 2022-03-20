@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
+import searchable from "mongoose-regex-search";
 
 const { Schema, model } = mongoose;
 
 const shopSchema = new Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, searchable: true },
     address: { type: String, required: true },
     phoneNumber: { type: String, required: true },
-    category: { type: String, required: true },
+    category: { type: String, required: true, searchable: true },
     cover: { type: String },
     instagram: { type: String },
     twitter: { type: String },
@@ -23,6 +24,8 @@ const shopSchema = new Schema(
     timestamps: true,
   }
 );
+
+shopSchema.plugin(searchable);
 
 shopSchema.static("findShopWithUser", async function (mongoQuery) {
   const total = await this.countDocuments(mongoQuery.criteria);
