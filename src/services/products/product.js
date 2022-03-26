@@ -75,7 +75,7 @@ productsRouter.post("/", JWTAuthMiddleware, async (req, res, next) => {
   }
 });
 
-//***********************POST IMAGES**********************/
+//***********************POST IMAGES**********************
 
 productsRouter.post(
   "/:proId/image1",
